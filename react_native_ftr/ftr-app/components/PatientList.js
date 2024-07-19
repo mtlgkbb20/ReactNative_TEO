@@ -43,8 +43,8 @@ export default function PatientList() {
                         const currentDate = new Date().toISOString();
                         console.log('Current date: ', currentDate);
                         tx.executeSql(
-                            'INSERT INTO Messages (patientId, therapistId, content, treatmentDate) VALUES (?, ?, ?, ?);',
-                            [patientId, 1, message, currentDate],
+                            'INSERT INTO Messages (patientId, therapistId, content, messageDate, sender, receiver) VALUES (?, ?, ?, ?, ?, ?);',
+                            [patientId, 1, message, currentDate, "therapist", "patient"],
                             () => {
                                 Alert.alert('Başarılı', 'Mesaj başarıyla gönderildi.');
                                 setMessage(''); // Clear the message input
@@ -91,6 +91,25 @@ export default function PatientList() {
         </TouchableOpacity>
     );
 
+    const showMessages = () => {
+        console.log('Fetching messages for:', selectedPatient);
+        db.transaction(tx => {
+            tx.executeSql(
+                'SELECT content, sender FROM Messages WHERE therapistId = ?;',
+                [2],
+                (_, { rows }) => {
+                    if (rows.length > 0) {
+                        console.log('Messages for', selectedPatient, ':', rows._array);
+                    } else {
+                        console.error('No messages found for', selectedPatient);
+                    }
+                },
+                (_, error) => {
+                    console.error('Error fetching messages: ', error);
+                }
+            );
+        });    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -103,6 +122,8 @@ export default function PatientList() {
                 keyExtractor={(item, index) => index.toString()}
                 contentContainerStyle={styles.list}
             />
+            <CustomButton title="Mesajları göster" onPress={() => showMessages()} style={{marginLeft:0, borderRadius:20, width:200, marginBottom:50}} textStyle={{fontSize:20}} />
+
         </View>
     );
 }

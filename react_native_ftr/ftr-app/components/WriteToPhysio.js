@@ -7,6 +7,7 @@ import { TouchableOpacity, Text, TextInput } from "react-native";
 import { DBContext } from "./DBContext";
 import { useContext } from "react";
 import { UserContext } from "./UserContext";
+import { Alert } from "react-native";
 
 export default function WriteToPhysio() {
     const navigation = useNavigation();
@@ -19,7 +20,46 @@ export default function WriteToPhysio() {
     const handleSendMessage = () => {
         // Implement sending message logic here
         console.log('Sending message:', message);
-        // Add logic to send message to selected physio
+        if (!message) {
+            Alert.alert('Lütfen bir mesaj giriniz.');
+            return;
+        }
+        const [name, surname] = selectedPhysio.split(' ');
+        console.log('Patient name: ', name, 'Patient surname: ', surname);
+
+        db.transaction(tx => {
+            tx.executeSql(
+                'SELECT id FROM User WHERE name = ? AND surname = ?;',
+                [name, surname],
+                (_, { rows }) => {
+                    console.log('Rows: ', rows);
+                    if (rows.length > 0) {
+                        const therapistId = rows.item(0).id;
+                        console.log('Patient found in the database: ', therapistId);
+                        console.log('Sending message: ', message);
+                        console.log('Current physio id: ', user.id);
+                        // Now insert the message
+                        const currentDate = new Date().toISOString();
+                        console.log('Current date: ', currentDate);
+                        tx.executeSql(
+                            'INSERT INTO Messages (patientId, therapistId, content, messageDate, sender, receiver) VALUES (?, ?, ?, ?, ?, ?);',
+                            [1, therapistId, message, currentDate, "patient", "therapist"],
+                            () => {
+                                Alert.alert('Başarılı', 'Mesaj başarıyla gönderildi.');
+                                setMessage(''); // Clear the message input
+                            },
+                            (_, error) => {
+                                console.error('Error sending message: ', error);
+                                Alert.alert('Hata', 'Mesaj gönderilirken bir hata oluştu.');
+                            }
+                        );
+                    } else {
+                        console.error('Therapist not found in the database.');
+                        Alert.alert('Hata', 'Hasta veritabanında bulunamadı.');
+                    }
+                },
+            );
+        });
     };
 
     const renderItem = ({ item }) => (
@@ -48,7 +88,7 @@ export default function WriteToPhysio() {
         console.log('Fetching messages for:', selectedPhysio);
         db.transaction(tx => {
             tx.executeSql(
-                'SELECT content FROM Messages WHERE patientId = ?;',
+                'SELECT content, sender FROM Messages WHERE patientId = ?;',
                 [1],
                 (_, { rows }) => {
                     if (rows.length > 0) {

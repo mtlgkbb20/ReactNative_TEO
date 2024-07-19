@@ -16,9 +16,11 @@ const menuItemsToDisplayToPatient = [
 
 const menuItemsToDisplayToPhysio = [
     { name: "Hasta Listem", id: "A", path: "PatientList" },
-    { name: "Profilim", id: "B", path: "Profile" },
-    { name: "Ayarlar", id: "C", path: "Settings" },
-    { name: "Çıkış", id: "D", path: "Login" },
+    { name: "Bildirimler", id: "B", path: "Notifications" },
+    { name: "Session Ekle", id: "C", path: "AddSession" },
+    { name: "Profilim", id: "D", path: "Profile" },
+    { name: "Ayarlar", id: "E", path: "Settings" },
+    { name: "Çıkış", id: "F", path: "Login" },
 ];
 
 const Item = ({ name }) => (

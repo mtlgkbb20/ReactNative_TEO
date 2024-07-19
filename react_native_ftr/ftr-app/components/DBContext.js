@@ -65,7 +65,8 @@ export const DBProvider = ({ children }) => {
                         `CREATE TABLE IF NOT EXISTS Patients (
                             id INTEGER PRIMARY KEY NOT NULL, 
                             therapistId INTEGER NOT NULL,
-                            condition TEXT NOT NULL
+                            condition TEXT NOT NULL,
+                            Foreign Key (id) references User(id)
                         );`,
                         [],
                         () => console.log('Patients table created successfully'),
@@ -76,7 +77,8 @@ export const DBProvider = ({ children }) => {
                     tx.executeSql(
                         `CREATE TABLE IF NOT EXISTS Therapists (
                             id INTEGER PRIMARY KEY NOT NULL, 
-                            specialty TEXT NOT NULL
+                            specialty TEXT NOT NULL,
+                            Foreign Key (id) references User(id)
                         );`,
                         [],
                         () => console.log('Therapists table created successfully'),
@@ -86,7 +88,7 @@ export const DBProvider = ({ children }) => {
                     // Create Sessions table
                     tx.executeSql(
                         `CREATE TABLE IF NOT EXISTS Sessions (
-                            id INTEGER PRIMARY KEY NOT NULL, 
+                            id INTEGER PRIMARY KEY Autoincrement, 
                             patientId INTEGER NOT NULL, 
                             therapistId INTEGER NOT NULL, 
                             date TEXT NOT NULL,
@@ -105,7 +107,9 @@ export const DBProvider = ({ children }) => {
                             patientId INTEGER NOT NULL, 
                             therapistId INTEGER NOT NULL, 
                             content TEXT NOT NULL, 
-                            treatmentDate TEXT NOT NULL,
+                            messageDate TEXT NOT NULL,
+                            sender TEXT NOT NULL,
+                            receiver TEXT NOT NULL,
                             FOREIGN KEY (patientId) REFERENCES Patients (id),
                             FOREIGN KEY (therapistId) REFERENCES Therapists (id)
                         );`,

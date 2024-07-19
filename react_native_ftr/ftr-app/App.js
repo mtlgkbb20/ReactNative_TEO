@@ -17,6 +17,7 @@ import AdminPanel from './components/AdminPanel';
 import PatientList from './components/PatientList';
 import Information from './components/Information';
 import MenuItems from './components/MenuItems';
+import AddSession from './components/AddSession';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,6 +40,7 @@ export default function App() {
             <Stack.Screen name="PatientList" component={PatientList} options={{ headerShown: false }} />
             <Stack.Screen name="Information" component={Information} options={{ headerShown: false }} />
             <Stack.Screen name="MenuItems" component={MenuItems} options={{ headerShown: false }} />
+            <Stack.Screen name="AddSession" component={AddSession} options={{ headerShown: false }} />
           </Stack.Navigator>
         </NavigationContainer>
       </UserProvider>
