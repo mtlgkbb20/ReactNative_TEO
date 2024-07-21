@@ -65,7 +65,7 @@ export const DBProvider = ({ children }) => {
                         `CREATE TABLE IF NOT EXISTS Patients (
                             id INTEGER PRIMARY KEY NOT NULL, 
                             therapistId INTEGER NOT NULL,
-                            condition TEXT NOT NULL,
+                            condition TEXT,
                             Foreign Key (id) references User(id)
                         );`,
                         [],
@@ -77,13 +77,21 @@ export const DBProvider = ({ children }) => {
                     tx.executeSql(
                         `CREATE TABLE IF NOT EXISTS Therapists (
                             id INTEGER PRIMARY KEY NOT NULL, 
-                            specialty TEXT NOT NULL,
+                            specialty TEXT,
                             Foreign Key (id) references User(id)
                         );`,
                         [],
                         () => console.log('Therapists table created successfully'),
                         (_, error) => console.error('Error creating Therapists table: ', error)
                     );
+
+                    tx.executeSql(
+                        'CREATE TABLE IF NOT EXISTS videos (id INTEGER PRIMARY KEY AUTOINCREMENT, uri TEXT);',
+                        [],
+                        () => console.log('Videos table created successfully'),
+                        (_, error) => console.error('Error creating Videos table: ', error)
+                    );
+
 
                     // Create Sessions table
                     tx.executeSql(

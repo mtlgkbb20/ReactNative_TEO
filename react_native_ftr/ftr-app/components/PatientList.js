@@ -14,6 +14,7 @@ export default function PatientList() {
     const [message, setMessage] = React.useState('');
     const { db } = useContext(DBContext);
     const { user } = useContext(UserContext); // Assuming user contains therapistId
+    const [patientId, setPatientId] = React.useState(null);
 
     const handlePatientClick = (patient) => {
         setSelectedPatient(selectedPatient === patient ? null : patient);
@@ -95,8 +96,23 @@ export default function PatientList() {
         console.log('Fetching messages for:', selectedPatient);
         db.transaction(tx => {
             tx.executeSql(
+                'Select id from User where name = ? and surname = ?;',
+                [selectedPatient.split(' ')[0], selectedPatient.split(' ')[1]],
+                (_, { rows }) => {
+                    if (rows.length > 0) {
+                        console.log('Patient found in the database: ', patientId);
+                        setPatientId(patientId);
+                    } else {
+                        console.error('Patient not found in the database.');
+                    }
+                },
+                (_, error) => {
+                    console.error('Error fetching patient: ', error);
+                }
+            );
+            tx.executeSql(
                 'SELECT content, sender FROM Messages WHERE therapistId = ?;',
-                [2],
+                [patientId],
                 (_, { rows }) => {
                     if (rows.length > 0) {
                         console.log('Messages for', selectedPatient, ':', rows._array);

@@ -4,7 +4,7 @@ import CustomButton from './CustomButton';
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { DBContext } from './DBContext';
 import { UserContext } from './UserContext';
-import { set } from 'mongoose';
+import FAIcon from 'react-native-vector-icons/FontAwesome';
 
 export default function LoginForm() {
     const [username, setUsername] = useState('');
@@ -54,12 +54,17 @@ export default function LoginForm() {
         <ScrollView style={styles.loginForm} keyboardDismissMode='on-drag'>
             <Text style={styles.formHeading}>Please Login to App!</Text>
             <View style={styles.formBody}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <FAIcon name="user" size={18} style={{marginLeft: 10, position:"absolute", zIndex:1}}/>
             <TextInput
                 value={username}
                 onChangeText={text => setUsername(text)}
                 style={styles.loginInput}
                 placeholder='Phone number or email'
             />
+            </View>
+            <View style={{flexDirection: 'row', alignItems: 'center', }}>
+            <FAIcon name="lock" size={20} style={{marginLeft: 10, position:"absolute", zIndex:1}}/>
             <TextInput
                 value={password}
                 onChangeText={text => setPassword(text)}
@@ -67,6 +72,7 @@ export default function LoginForm() {
                 placeholder='Password'
                 secureTextEntry={true}
             />
+            </View>
             </View>
             <View style = {styles.buttons}>
                 <CustomButton title='Login' onPress={handleLogin} style={styles.button} />
@@ -101,11 +107,14 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 10,
         padding: 12,
+        width: '100%',
+        paddingLeft: 30,
         backgroundColor: '#fff',
     },
     button: {
-        marginTop: 75,
+        marginTop: 60,
         backgroundColor: '#fff',
+        borderRadius: 15,
     },
     buttons: {
         display: 'flex',

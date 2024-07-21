@@ -8,10 +8,9 @@ const menuItemsToDisplayToPatient = [
     { name: "Ev Egzersizim", id: "B", path: "HomeExercise" },
     { name: "Fizyoterapistime yaz", id: "C", path: "WriteToPhysio" },
     { name: "Geçmişim", id: "D", path: "History" },
-    { name: "Bildirimler", id: "E", path: "Notifications" },
-    { name: "Profilim", id: "F", path: "Profile" },
-    { name: "Ayarlar", id: "G", path: "Settings" },
-    { name: "Çıkış", id: "H", path: "Login" },
+    { name: "Profilim", id: "E", path: "Profile" },
+    //{ name: "Ayarlar", id: "F", path: "Settings" },
+    { name: "Çıkış", id: "G", path: "Login" },
 ];
 
 const menuItemsToDisplayToPhysio = [

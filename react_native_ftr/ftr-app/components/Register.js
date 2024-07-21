@@ -12,6 +12,7 @@ export default function RegisterForm() {
     const navigation = useNavigation();
     const { db } = useContext(DBContext);
     const { setUser } = useContext(UserContext);
+    const [userId, setUserId] = useState(null);
 
     const handleRegister = () => {
         if (username === '' || password === '' || logType === '') {
@@ -25,7 +26,6 @@ export default function RegisterForm() {
                 [username, password, logType],
                 (_, result) => {
                     console.log('User registered successfully: ', result);
-                    Alert.alert('Success', 'User registered successfully');
 
                     tx.executeSql(
                         'INSERT INTO User (username, name, surname, age, phone, mail) VALUES (?, ?, ?, ?, ?, ?);',
@@ -33,6 +33,7 @@ export default function RegisterForm() {
                         (_, result) => {
                             console.log('User profile initialized successfully: ', result);
                             setUser({ username, password, logType }); // Update user context
+                            Alert.alert('Success', 'User registered successfully');
                             navigation.navigate('Profile');
                         },
                         (_, error) => {
@@ -40,9 +41,30 @@ export default function RegisterForm() {
                             Alert.alert('Error', 'An error occurred while initializing user profile.');
                         }
                     );
-                    setUser({ username, password, logType }); // Update user context
-                    
-                    navigation.navigate('Profile'); // Ensure 'Profile' route exists in navigation
+                    tx.executeSql(
+                        'Select id from User where username = ?;',
+                        [username],
+                        (_, { rows }) => {
+                            setUserId(rows.item(0).id);
+                            if (logType === 'physio') {
+                                tx.executeSql(
+                                    'CREATE TRIGGER IF NOT EXISTS createPhysio AFTER INSERT ON User BEGIN Insert Into Physios(id, patientId) Values(?, ?); END;',
+                                    [userId, ],
+                                    () => console.log('Trigger created successfully'),
+                                    (_, error) => console.error('Error creating Trigger: ', error)
+                                );
+                            } else if (logType === 'patient')
+                            tx.executeSql(
+                                'CREATE TRIGGER IF NOT EXISTS createPatient AFTER INSERT ON User BEGIN Insert Into Patients(id, therapistId) Values(?, ?); END;',
+                                [userId, ],
+                                () => console.log('Trigger created successfully'),
+                                (_, error) => console.error('Error creating Trigger: ', error)
+                            );
+                        },
+                        (_, error) => {
+                            console.error('Error fetching user id: ', error);
+                        }
+                    );
                 },
                 (_, error) => {
                     console.error('Error registering user: ', error);
@@ -54,10 +76,8 @@ export default function RegisterForm() {
 
     return (
         <ScrollView style={styles.registerForm} keyboardDismissMode='on-drag'>
-            <View>
-                <CustomButton title="Back" onPress={() => navigation.navigate("Login")} style={styles.backButton} />
-            </View>
             <Text style={styles.formHeading}>Please Register to App!</Text>
+            <View style={styles.formBody}>
             <TextInput
                 value={username}
                 onChangeText={text => setUsername(text)}
@@ -77,7 +97,11 @@ export default function RegisterForm() {
                 style={styles.registerInput}
                 placeholder='Patient/Physio'
             />
-            <CustomButton title='Register' onPress={handleRegister} />
+            </View>
+            <View style={styles.buttons}>
+                <CustomButton title='Register' onPress={handleRegister} style={styles.registerButton} />
+                <CustomButton title="Back" onPress={() => navigation.navigate("Login")} style={styles.backButton} />
+            </View>
         </ScrollView>
     );
 }
@@ -86,14 +110,17 @@ const styles = StyleSheet.create({
     registerForm: {
         flex: 1,
         backgroundColor: '#b0e2ff',
-        padding: 20,
+        padding: 40,
     },
     formHeading: {
         fontSize: 20,
         color: '#009acd',
         textAlign: 'center',
-        marginTop: 50,
+        marginTop: 100,
         marginBottom: 20,
+    },
+    formBody: {
+        marginTop: '50%',
     },
     registerInput: {
         marginVertical: 10,
@@ -105,5 +132,17 @@ const styles = StyleSheet.create({
     backButton: {
         alignSelf: 'flex-start',
         marginBottom: 20,
+        backgroundColor: "#fff"
+    },
+    registerButton: {
+        alignSelf: 'flex-start',
+        marginBottom: 20,
+        marginLeft:0,
+        backgroundColor: "#fff"
+    },
+    buttons: {
+        marginTop: 40,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
 });

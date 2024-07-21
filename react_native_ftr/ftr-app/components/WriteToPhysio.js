@@ -11,11 +11,12 @@ import { Alert } from "react-native";
 
 export default function WriteToPhysio() {
     const navigation = useNavigation();
-    const data = ["kadriye şen", "ahmet yılmaz"];
+    const [data, setData] = React.useState(null);
     const [selectedPhysio, setSelectedPhysio] = React.useState(null); // Track selected physio by name or ID
     const [message, setMessage] = React.useState(''); // State to hold the message
     const { db } = useContext(DBContext);
     const { user } = useContext(UserContext); // Assuming user contains therapistId
+    const [therapistId, setTherapistId] = React.useState(null);
 
     const handleSendMessage = () => {
         // Implement sending message logic here
@@ -88,8 +89,23 @@ export default function WriteToPhysio() {
         console.log('Fetching messages for:', selectedPhysio);
         db.transaction(tx => {
             tx.executeSql(
+                'select id from User where name = ? and surname = ?;',
+                [selectedPhysio.split(' ')[0], selectedPhysio.split(' ')[1]],
+                (_, { rows }) => {
+                    if (rows.length > 0) {
+                        console.log('Therapist found in the database: ', therapistId);
+                        setTherapistId(therapistId);
+                    } else {
+                        console.error('Therapist not found in the database.');
+                    }
+                },
+                (_, error) => {
+                    console.error('Error fetching therapist: ', error);
+                }
+            );
+            tx.executeSql(
                 'SELECT content, sender FROM Messages WHERE patientId = ?;',
-                [1],
+                [therapistId],
                 (_, { rows }) => {
                     if (rows.length > 0) {
                         console.log('Messages for', selectedPhysio, ':', rows._array);
@@ -106,13 +122,13 @@ export default function WriteToPhysio() {
 
     return (
         <View style={styles.container}>
-            <CustomButton title="Geri" onPress={() => navigation.goBack()} style={{ marginTop: 50 }} />
+            <CustomButton title="Geri" onPress={() => navigation.goBack()} style={{ marginTop: 60, marginLeft:-280, width:80 }} />
             <FlatList
                 data={data}
                 renderItem={renderItem}
                 keyExtractor={(item, index) => index.toString()}
             />
-            <CustomButton title="Mesajları göster" onPress={() => showMessages()} textStyle={{fontSize:50}} />
+            <CustomButton title="Mesajları göster" onPress={() => showMessages()} style={{marginLeft:0, borderRadius:20, width:200, marginBottom:50}} textStyle={{fontSize:20}} />
         </View>
     );
 }

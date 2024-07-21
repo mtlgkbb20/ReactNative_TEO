@@ -1,24 +1,15 @@
-import React from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { View, Text, FlatList } from 'react-native';
+import { DBContext } from "./DBContext";
 
-const notifications = [
-    { name: "notification1", id: "n1" },
-    { name: "notification2", id: "n2" },
-    { name: "notification3", id: "n3" },
-    { name: "notification4", id: "n4" },
-    { name: "notification5", id: "n5" },
-    { name: "notification6", id: "n6" },
-    { name: "notification7", id: "n7" },
-    { name: "notification8", id: "n8" },
-    { name: "notification9", id: "n9" },
-    { name: "notification10", id: "n10" },
-];
-
-const Item = ({ name }) => (
+const Item = ({ content, name, date }) => (
     <View style={styles.MenuItemsScroll}>
-        <Text style={styles.MenuItemsText}>{name}</Text>
+        {content && <><Text style={styles.MenuItemsText}>Content: {content} </Text><Text style={styles.MenuItemsText}>Sender: {name} </Text></>}
+        {date && 
+        <><Text style={styles.MenuItemsText}>Date: {date} </Text><Text style={styles.MenuItemsText}>{name} tarafından oluşturuldu.</Text></>}
     </View>
 );
+
 const Header = () => (
     <View style={styles.HeadingContainer}>
         <Text style={styles.MenuHeader}>Bildirimler</Text>
@@ -26,13 +17,51 @@ const Header = () => (
 );
 
 export default function MenuItems() {
-    const renderItem = ({ item }) => <Item name={item.name} />;
+    const { db } = useContext(DBContext);
+    const [notifications, setNotifications] = useState([]);
+
+    useEffect(() => {
+        let messages = [];
+        let sessions = [];
+
+        db.transaction(tx => {
+            tx.executeSql(
+                'SELECT u.name, m.content, m.id FROM User u INNER JOIN Messages m ON m.therapistId=u.id;',
+                [],
+                (_, { rows }) => {
+                    messages = rows._array;
+                    if (sessions.length > 0) {
+                        setNotifications([...messages, ...sessions]);
+                    }
+                },
+                (_, error) => {
+                    console.error('Error fetching messages: ', error);
+                }
+            );
+            tx.executeSql(
+                'SELECT u.name, s.date, s.id FROM User u INNER JOIN Sessions s ON s.therapistId=u.id;',
+                [],
+                (_, { rows }) => {
+                    sessions = rows._array;
+                    if (messages.length > 0) {
+                        setNotifications([...messages, ...sessions]);
+                    }
+                },
+                (_, error) => {
+                    console.error('Error fetching sessions: ', error);
+                }
+            );
+        });
+    }, [db]);
+
+    const renderItem = ({ item }) => <Item content={item.content} name={item.name} date={item.date} />;
+
     return (
         <View style={styles.MenuItems}>
             <FlatList 
                 data={notifications} 
                 renderItem={renderItem} 
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.id.toString()}
                 ListHeaderComponent={Header}
             />
         </View>
